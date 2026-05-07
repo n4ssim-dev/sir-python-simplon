@@ -1,0 +1,4 @@
+*.csv
+.~lock.simulation_results.csv#
+.venv
+/.venv

@@ -82,13 +82,26 @@ def simulation_by_age_id(nb_day: int, id_age: int):
     groupe['sir'] = simulation(nb_day, groupe['tc'], groupe['tg'], pop, s, i, r)
     return groupe['sir']
 
-def simulation_all_age(func):
+def simulation_all_age(func,id_age):
     nb_of_age = len(pop_types)
     for i in range(nb_of_age):
         func()
 
 sir = simulation(30, taux_contamination, taux_guerison, init_population, S, I, R)
-sir_by_age = simulation_by_age_id(300, 1)
 
-# Imprime la dict sir dans la dict avec l'indice correspondant au 2eme arg
-print(sir_by_age)
+sir_enfants = simulation_by_age_id(300, 1)
+sir_adultes = simulation_by_age_id(300, 2)
+sir_seniors = simulation_by_age_id(300, 3)
+
+sir_by_age = [sir_enfants, sir_adultes, sir_seniors]
+
+## Tableau
+
+df = pd.DataFrame({
+    'Jour': range(len(sir_enfants['infectes'])),
+    'I(0-18ans)': sir_enfants['infectes'],
+    'I(18-67ans)': sir_adultes['infectes'],
+    'I(67-100ans)': sir_seniors['infectes']
+})
+df.to_csv('simulation_results.csv', index=False)
+
