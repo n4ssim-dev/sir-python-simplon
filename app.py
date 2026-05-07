@@ -13,6 +13,7 @@ I = [1]
 R = [0]
 
 def simulation(day_nb: int,tc: float,tg: float,popu: int, s=list,i=list,r=list):
+    d_saturation = None
 
     for d in range(0,day_nb):
 
@@ -23,10 +24,15 @@ def simulation(day_nb: int,tc: float,tg: float,popu: int, s=list,i=list,r=list):
         i.append(i[d] + nouveauxInfectes - nouveauxRetablis)
         r.append(r[d] + nouveauxRetablis)
 
+        if i[d] >= 15:
+            if d_saturation is not None:
+                d_saturation = d
+
     sir = {
         "susceptibles": s,
         "infectes": i,
-        "r": r,
+        "retrait": r,
+        "d_saturation": d_saturation
     }
 
     return sir;
