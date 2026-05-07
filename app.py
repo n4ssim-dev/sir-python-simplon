@@ -1,21 +1,47 @@
 import random
 import time
+import math
 import matplotlib.pyplot as plt
 import pandas as pd
-from typing import TypedDict
 
 taux_contamination: float = 0.1
-taux_guerison: float= 0.1
+taux_guerison: float = 0.1
 init_population: float = 1000
 
-S = [init_population-1]
+S = [init_population - 1]
 I = [1]
 R = [0]
 
-def simulation(day_nb: int,tc: float,tg: float,popu: int, s=list,i=list,r=list):
+def change_scenario(mtc: int, mtg: int):
+    def decorator(func):
+        def my_inner(*args, **kwargs):
+            # Applique un multiplicateur au taux de conta (mtc) et de guerison (mtg)
+            args = list(args)
+            args[1] = args[1] * mtc  # tc
+            args[2] = args[2] * mtg  # tg
+            return func(*args, **kwargs)
+        return my_inner
+    return decorator
+
+
+def limit_check(func):
+    def my_inner(*args, **kwargs):
+        # fait en sorte que somme des SIR = 1000 et infectes <= 1000
+        result = func(*args, **kwargs)
+        popu = args[3] if len(args) > 3 else kwargs.get('popu', 1000)
+        result['infectes'] = [min(v, popu) for v in result['infectes']]
+        return result
+    return my_inner
+
+
+# x de taux de conta, x de taux de guer
+@change_scenario(1, 1)
+@limit_check
+def simulation(day_nb: int, tc: float, tg: float, popu: int, s: list, i: list, r: list):
+    d_saturation_achieved = False
     d_saturation = None
 
-    for d in range(0,day_nb):
+    for d in range(0, day_nb):
 
         nouveauxInfectes = tc * float(i[d]) * (s[d] / popu)
         nouveauxRetablis = tg * float(i[d])
@@ -24,9 +50,9 @@ def simulation(day_nb: int,tc: float,tg: float,popu: int, s=list,i=list,r=list):
         i.append(i[d] + nouveauxInfectes - nouveauxRetablis)
         r.append(r[d] + nouveauxRetablis)
 
-        if i[d] >= 15:
-            if d_saturation is not None:
-                d_saturation = d
+        if i[d] >= 15 and not d_saturation_achieved:
+            d_saturation = d
+            d_saturation_achieved = True
 
     sir = {
         "susceptibles": s,
@@ -35,7 +61,7 @@ def simulation(day_nb: int,tc: float,tg: float,popu: int, s=list,i=list,r=list):
         "d_saturation": d_saturation
     }
 
-    return sir;
+    return sir
 
-sir = simulation(30,taux_contamination,taux_guerison, init_population, S,I,R);
-print(sir)
+sir = simulation(30, taux_contamination, taux_guerison, init_population, S, I, R)
+print(sir["d_saturation"])
