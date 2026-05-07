@@ -12,57 +12,38 @@ S = [init_population - 1]
 I = [1]
 R = [0]
 
-pop_type_indice = {
+pop_types = {
     'enfants': {
         'indice': 1,
         'tranche': [0,18],
-        'population': init_population / 0.18,
-        'tc': 0, # haut
-        'tg': 0 # faible
+        # %de la pop
+        'population': init_population * 0.18,
+        # taux de contamination
+        'tc': 0.3, # haut
+        # taux de guérison
+        'tg': 0.05, # faible
+        # dict qui stock les sir de ce groupe
+        'sir': {}
     },
     'adultes': {
         'indice': 2,
         'tranche': [18,67],
-        'population': init_population / 0.49,
-        'tc': 0, # haut
-        'tg': 0 # moyen
+        'population': init_population * 0.49,
+        'tc': 0.15, # moyen
+        'tg': 0.1, # moyen
+        'sir': {}
     },
     'seniors': {
         'indice': 3,
         'tranche': [67,100],
-        'population': init_population / 0.33,
-        'tc': 0, # faible
-        'tg': 0 # faible
+        'population': init_population * 0.33,
+        'tc': 0.05, # faible
+        'tg': 0.05, # faible
+        'sir': {}
     }
 }
 
-def change_scenario(mtc: int, mtg: int):
-    def decorator(func):
-        def my_inner(*args, **kwargs):
-            # Applique un multiplicateur au taux de conta (mtc) et de guerison (mtg)
-            args = list(args)
-            args[1] = args[1] * mtc  # tc
-            args[2] = args[2] * mtg  # tg
-            return func(*args, **kwargs)
-        return my_inner
-    return decorator
 
-def scenario_by_age():
-    
-
-def limit_check(func):
-    def my_inner(*args, **kwargs):
-        # fait en sorte que somme des SIR = 1000 et infectes <= 1000
-        result = func(*args, **kwargs)
-        popu = args[3] if len(args) > 3 else kwargs.get('popu', 1000)
-        result['infectes'] = [min(v, popu) for v in result['infectes']]
-        return result
-    return my_inner
-
-
-# x de taux de conta, x de taux de guer
-@change_scenario(1, 1)
-@limit_check
 def simulation(day_nb: int, tc: float, tg: float, popu: int, s: list, i: list, r: list):
     d_saturation_achieved = False
     d_saturation = None
@@ -80,14 +61,29 @@ def simulation(day_nb: int, tc: float, tg: float, popu: int, s: list, i: list, r
             d_saturation = d
             d_saturation_achieved = True
 
-    sir = {
+    return {
         "susceptibles": s,
         "infectes": i,
         "retrait": r,
         "d_saturation": d_saturation
     }
 
-    return sir
+def simulation_by_age_id(nb_day: int, id_age: int):
+    # Cible la cat avec l'indice age
+    groupe = next(g for g in pop_types.values() if g['indice'] == id_age)
 
-sir = simulation(30, taux_contamination, taux_guerison, init_population, S, I, R)
-print(sir["d_saturation"])
+    # Init le sir de cette cat
+    pop = groupe['population']
+    s = [pop - 1]
+    i = [1]
+    r = [0]
+
+    # Fais une simulation et assigne les valeurs en param
+    groupe['sir'] = simulation(nb_day, groupe['tc'], groupe['tg'], pop, s, i, r)
+    return groupe['sir']
+
+
+# sir = simulation(30, taux_contamination, taux_guerison, init_population, S, I, R)
+sir_by_age = simulation_by_age_id(300, 1)
+
+print(sir_by_age)
