@@ -82,8 +82,13 @@ def simulation_by_age_id(nb_day: int, id_age: int):
     groupe['sir'] = simulation(nb_day, groupe['tc'], groupe['tg'], pop, s, i, r)
     return groupe['sir']
 
+def simulation_all_age(func):
+    nb_of_age = len(pop_types)
+    for i in range(nb_of_age):
+        func()
 
-# sir = simulation(30, taux_contamination, taux_guerison, init_population, S, I, R)
+sir = simulation(30, taux_contamination, taux_guerison, init_population, S, I, R)
 sir_by_age = simulation_by_age_id(300, 1)
 
+# Imprime la dict sir dans la dict avec l'indice correspondant au 2eme arg
 print(sir_by_age)
