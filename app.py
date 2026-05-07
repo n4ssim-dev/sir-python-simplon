@@ -12,6 +12,30 @@ S = [init_population - 1]
 I = [1]
 R = [0]
 
+pop_type_indice = {
+    'enfants': {
+        'indice': 1,
+        'tranche': [0,18],
+        'population': init_population / 0.18,
+        'tc': 0, # haut
+        'tg': 0 # faible
+    },
+    'adultes': {
+        'indice': 2,
+        'tranche': [18,67],
+        'population': init_population / 0.49,
+        'tc': 0, # haut
+        'tg': 0 # moyen
+    },
+    'seniors': {
+        'indice': 3,
+        'tranche': [67,100],
+        'population': init_population / 0.33,
+        'tc': 0, # faible
+        'tg': 0 # faible
+    }
+}
+
 def change_scenario(mtc: int, mtg: int):
     def decorator(func):
         def my_inner(*args, **kwargs):
@@ -23,6 +47,8 @@ def change_scenario(mtc: int, mtg: int):
         return my_inner
     return decorator
 
+def scenario_by_age():
+    
 
 def limit_check(func):
     def my_inner(*args, **kwargs):
